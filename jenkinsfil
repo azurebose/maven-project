@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+    tools{
+        maven 'maven3.8.7'
+    }
+
+    stages {
+        stage('clone the repository') {
+            steps {
+            git branch: 'build-and-push-to-jfrog-jenkinsfile', url: 'https://github.com/techworldwithmurali/java-application.git'
+            }
+        }
+        stage('build the code') {
+            steps { 
+             sh "mvn clean install"
+            }
+        }
+       
+        stage('Push the artifacts into Jfrog artifactory') {
+            steps {
+              rtUpload (
+                serverId: 'maven_dev1',
+                spec: '''{
+                      "files": [
+                        {
+                          "pattern": "*.war",
+                           "target": "java-app"
+                        }
+                    ]
+                }'''
+              )
+          }
+        }
+    }
+}
